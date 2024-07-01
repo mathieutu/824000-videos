@@ -1,10 +1,5 @@
-import { useState } from 'react';
-
 export default function Home() {
-  const [loading, setLoading] = useState(false);
-
   const imagePost = async () => {
-    setLoading(true);
     try {
       const response = await fetch('/api', {
         method: 'POST',
@@ -18,7 +13,6 @@ export default function Home() {
     } catch (error) {
       console.error(error);
     }
-    setLoading(false);
   };
 
   return (
