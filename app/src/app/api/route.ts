@@ -32,7 +32,7 @@ export async function POST(req: any, res: any) {
 
     await uploadToGoogleDrive(buffer, filename, folderId);
 
-    return NextResponse.json({ message: "Success" }, { status: 201 });
+    return NextResponse.json({ message: "Fichier(s) importé(s) avec succès" }, { status: 201 });
   } catch (err) {
     console.error(err);
     return NextResponse.json(
