@@ -1,6 +1,6 @@
 /* eslint-disable react/no-unescaped-entities */
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { FilePond, registerPlugin } from "react-filepond";
 import "filepond/dist/filepond.min.css";
@@ -13,12 +13,11 @@ import animationData from "./assets/loading.json";
 
 registerPlugin(FilePondPluginImagePreview, FilePondPluginFileValidateType);
 
-export default function Home() {
+function HomeComponent() {
   const [apiMessage, setApiMessage] = useState<string>("");
   const [files, setFiles] = useState<FilePondFile[]>([]);
   const [folder, setFolder] = useState<string | null>(null);
   const [id, setId] = useState<string | null>(null);
-  // 17pVXZ13kJghB00ORPB7o8FBDP-DzTEYG
   const [loading, setLoading] = useState<boolean>(false);
 
   const defaultOptions = {
@@ -132,5 +131,13 @@ export default function Home() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function Home() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <HomeComponent />
+    </Suspense>
   );
 }
