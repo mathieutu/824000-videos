@@ -2,8 +2,13 @@ import { google } from "googleapis";
 import * as stream from "stream";
 
 // Initialize the Google Drive API client
+const googleCredentials = process.env.GOOGLE_CREDENTIALS;
+if (!googleCredentials) {
+  throw new Error("Google credentials not found.");
+}
+
 const auth = new google.auth.GoogleAuth({
-  keyFile: "service_account.json", // Path to your service account credentials file
+  credentials: JSON.parse(googleCredentials),
   scopes: ["https://www.googleapis.com/auth/drive"], // Specify the scope of the API you're accessing
 });
 
