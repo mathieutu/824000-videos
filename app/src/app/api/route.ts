@@ -1,6 +1,4 @@
 import { NextResponse } from "next/server";
-import { writeFile } from "fs/promises";
-import path from "path";
 import { uploadToGoogleDrive } from "./upload_basic";
 
 export async function POST(req: any, res: any) {
@@ -14,18 +12,13 @@ export async function POST(req: any, res: any) {
       );
     }
 
-    const filename = file.name.replaceAll(" ", "_");
+    const filename = file.name.split(" ").join("_");
 
     const buffer = Buffer.from(await file.arrayBuffer());
 
-    uploadToGoogleDrive(buffer, filename);
+    await uploadToGoogleDrive(buffer, filename);
 
-    // await writeFile(
-    //   path.join(process.cwd(), "/public/assets/" + filename),
-    //   buffer
-    // );
-
-    return NextResponse.json({ Message: "Success" }, { status: 201 });
+    return NextResponse.json({ message: "Success" }, { status: 201 });
   } catch (err) {
     console.error(err);
     return NextResponse.json(
