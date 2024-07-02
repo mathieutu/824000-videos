@@ -31,3 +31,12 @@ export async function uploadToGoogleDrive(
 
   return data;
 }
+
+export async function listFolders() {
+  const res = await drive.files.list({
+    q: "mimeType='application/vnd.google-apps.folder'",
+    fields: "files(id, name)",
+  });
+
+  return res.data.files;
+}

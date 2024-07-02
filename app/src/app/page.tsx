@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { use, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { FilePond, registerPlugin } from 'react-filepond';
 import 'filepond/dist/filepond.min.css';
@@ -19,6 +19,7 @@ export default function Home() {
   const [id, setId] = useState<string | null>(null);
   // 17pVXZ13kJghB00ORPB7o8FBDP-DzTEYG
   const [loading, setLoading] = useState<boolean>(false);
+  const [folders, setFolders] = useState<{ id: string; name: string }[]>();
 
   const defaultOptions = {
     loop: true,
@@ -30,6 +31,22 @@ export default function Home() {
   };
 
   const searchParams = useSearchParams();
+  const allFoldersIds = async () => {
+    try {
+      const response = await fetch('/api');
+      if (!response.ok) {
+        throw new Error('Failed to fetch folders');
+      }
+      const data = await response.json();
+      return setFolders(data.folders);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  useEffect(() => {
+    allFoldersIds();
+  }, []);
 
   useEffect(() => {
     const folder = searchParams.get('folder');
@@ -86,7 +103,9 @@ export default function Home() {
     setLoading(false);
   };
 
-  if (!folder || !id) {
+  const isValidFolderId = folders?.some((folder) => folder.id === id);
+  
+  if (!folder || !id || !isValidFolderId) {
     return (
       <div className='container'>
         <h1>Erreur</h1>
