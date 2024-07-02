@@ -2,7 +2,6 @@ import { NextResponse } from "next/server";
 import { uploadToGoogleDrive } from "./upload_basic";
 
 export async function POST(req: any, res: any) {
-  console.log("entering post req w/", req.params);
   try {
     const formData = await req.formData();
     // Parse the URL to get query parameters
@@ -16,8 +15,6 @@ export async function POST(req: any, res: any) {
         { status: 400 }
       );
     }
-
-    console.log("here is folderID:", folderId);
     const file = formData.get("file");
     if (!file) {
       return NextResponse.json(
@@ -32,11 +29,11 @@ export async function POST(req: any, res: any) {
 
     await uploadToGoogleDrive(buffer, filename, folderId);
 
-    return NextResponse.json({ message: "Success" }, { status: 201 });
+    return NextResponse.json({ message: "Fichier(s) importé(s) avec succès" }, { status: 201 });
   } catch (err) {
     console.error(err);
     return NextResponse.json(
-      { error: "Internal server error" },
+      { error: "Internal server error", err },
       { status: 500 }
     );
   }
