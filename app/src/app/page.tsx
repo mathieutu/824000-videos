@@ -15,23 +15,11 @@ export default function Home() {
   const [files, setFiles] = useState<FilePondFile[]>([]);
   const [folder, setFolder] = useState<string | null>(null);
   const [id, setId] = useState<string | null>(null);
-  const [loading, setLoading] = useState<boolean>(false);
-
-  const defaultOptions = {
-    loop: true,
-    autoplay: true,
-    animationData: animationData,
-    rendererSettings: {
-      preserveAspectRatio: 'xMidYMid slice',
-    },
-  };
-
 
   const searchParams = useSearchParams();
 
   useEffect(() => {
-    const folder = searchParams.get('folder');
-
+    const folder = searchParams.get("folder");
     if (folder) {
       setFolder(folder);
     }
@@ -76,15 +64,6 @@ export default function Home() {
       setApiMessage("Failed to upload files");
     }
   };
-
-  if (!folder || !id) {
-    return (
-      <div className='container'>
-        <h1>Erreur</h1>
-        <p>Impossible de charger la page, aucun evenement n'est selectionné</p>
-      </div>
-    );
-  }
 
   return (
     <div className="container">
