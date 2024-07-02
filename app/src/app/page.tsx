@@ -15,18 +15,10 @@ registerPlugin(FilePondPluginImagePreview, FilePondPluginFileValidateType);
 export default function Home() {
   const [apiMessage, setApiMessage] = useState<string>('');
   const [files, setFiles] = useState<FilePondFile[]>([]);
-  const [folder, setFolder] = useState<string | null>('folder');
-  const [id, setId] = useState<string | null>('17pVXZ13kJghB00ORPB7o8FBDP-DzTEYG');
+  const [folder, setFolder] = useState<string | null>(null);
+  const [id, setId] = useState<string | null>(null);
+  // 17pVXZ13kJghB00ORPB7o8FBDP-DzTEYG
   const [loading, setLoading] = useState<boolean>(false);
-
-  if (!folder || !id) {
-    return (
-      <div className='container'>
-        <h1>Erreur</h1>
-        <p>Impossible de charger la page, aucun evenement n'est selectionné</p>
-      </div>
-    );
-  }
 
   const defaultOptions = {
     loop: true,
@@ -41,6 +33,7 @@ export default function Home() {
 
   useEffect(() => {
     const folder = searchParams.get('folder');
+    console.log(folder);
     if (folder) {
       setFolder(folder);
     }
@@ -93,6 +86,15 @@ export default function Home() {
     }
     setLoading(false);
   };
+
+  if (!folder || !id) {
+    return (
+      <div className='container'>
+        <h1>Erreur</h1>
+        <p>Impossible de charger la page, aucun evenement n'est selectionné</p>
+      </div>
+    );
+  }
 
   return (
     <div className='container'>
