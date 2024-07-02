@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { FilePond, registerPlugin } from "react-filepond";
 import "filepond/dist/filepond.min.css";
 import FilePondPluginImagePreview from "filepond-plugin-image-preview";
@@ -12,6 +13,25 @@ registerPlugin(FilePondPluginImagePreview, FilePondPluginFileValidateType);
 export default function Home() {
   const [apiMessage, setApiMessage] = useState<string>("");
   const [files, setFiles] = useState<FilePondFile[]>([]);
+  const [folder, setFolder] = useState<string | null>(null);
+  const [id, setId] = useState<string | null>(null);
+
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    const folder = searchParams.get("folder");
+    if (folder) {
+      setFolder(folder);
+    }
+  }, [searchParams]);
+
+  useEffect(() => {
+    const id = searchParams.get("id");
+    if (id) {
+      setId(id);
+      console.log(id);
+    }
+  }, [searchParams]);
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -27,7 +47,7 @@ export default function Home() {
     });
 
     try {
-      const response = await fetch("/api", {
+      const response = await fetch("/api?folder=" + folder + "&id=" + id, {
         method: "POST",
         body: formData,
       });
@@ -41,6 +61,7 @@ export default function Home() {
       setFiles([]);
     } catch (error) {
       console.error(error);
+      setApiMessage("Failed to upload files");
     }
   };
 
@@ -60,6 +81,7 @@ export default function Home() {
         </button>
         <p>{apiMessage}</p>
       </form>
+      {folder && <p>Current folder: {folder}</p>}
     </div>
   );
 }

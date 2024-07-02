@@ -9,7 +9,11 @@ const auth = new google.auth.GoogleAuth({
 
 const drive = google.drive({ version: "v3", auth });
 
-export async function uploadToGoogleDrive(buffer: any, filename: string) {
+export async function uploadToGoogleDrive(
+  buffer: any,
+  filename: string,
+  folderId: string
+) {
   const bufferStream = new stream.PassThrough();
   bufferStream.end(buffer);
 
@@ -20,7 +24,7 @@ export async function uploadToGoogleDrive(buffer: any, filename: string) {
     },
     requestBody: {
       name: filename,
-      parents: ["1MWxRUZ9O7aE7Q29KdWvS9If5al3ah3o0"], // Optional: specify a folder ID if you want to upload to a specific folder
+      parents: [folderId], // Optional: specify a folder ID if you want to upload to a specific folder
     },
     fields: "id",
   });
