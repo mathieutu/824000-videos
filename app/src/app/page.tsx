@@ -19,6 +19,7 @@ function HomeComponent() {
   const [folder, setFolder] = useState<string | null>(null);
   const [id, setId] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
+  const [folders, setFolders] = useState<{ id: string; name: string }[]>();
 
   const defaultOptions = {
     loop: true,
@@ -30,6 +31,22 @@ function HomeComponent() {
   };
 
   const searchParams = useSearchParams();
+  const allFoldersIds = async () => {
+    try {
+      const response = await fetch('/api');
+      if (!response.ok) {
+        throw new Error('Failed to fetch folders');
+      }
+      const data = await response.json();
+      return setFolders(data.folders);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  useEffect(() => {
+    allFoldersIds();
+  }, []);
 
   useEffect(() => {
     const folder = searchParams.get("folder");
@@ -86,7 +103,9 @@ function HomeComponent() {
     setLoading(false);
   };
 
-  if (!folder || !id) {
+  const isValidFolderId = folders?.some((folder) => folder.id === id);
+  
+  if (!folder || !id || !isValidFolderId) {
     return (
       <div className="container">
         <h1>Erreur</h1>

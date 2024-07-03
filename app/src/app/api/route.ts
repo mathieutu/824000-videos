@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { uploadToGoogleDrive } from "./upload_basic";
+import { listFolders, uploadToGoogleDrive } from "./upload_basic";
 
 export async function POST(req: any, res: any) {
   console.log("entering post req w/", req.params);
@@ -35,6 +35,19 @@ export async function POST(req: any, res: any) {
     return NextResponse.json({ message: "Fichier(s) importé(s) avec succès" }, { status: 201 });
   } catch (err) {
     console.error(err);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
+  }
+}
+
+
+export async function GET(req: any, res: any) {
+  try {
+    const folders = await listFolders();
+    return NextResponse.json({ folders }, { status: 200 });
+  } catch (err) {
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }
