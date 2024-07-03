@@ -18,21 +18,25 @@ export async function POST(req: any, res: any) {
     }
 
     console.log("here is folderID:", folderId);
-    const file = formData.get("file");
-    if (!file) {
+    const files = formData.getAll("file");
+
+    if (!files.length) {
       return NextResponse.json(
         { error: "No files received." },
         { status: 400 }
       );
     }
 
-    const filename = file.name.split(" ").join("_");
+    for (const file of files) {
+      const filename = file.name.split(" ").join("_");
+      const buffer = Buffer.from(await file.arrayBuffer());
+      await uploadToGoogleDrive(buffer, filename, folderId);
+    }
 
-    const buffer = Buffer.from(await file.arrayBuffer());
-
-    await uploadToGoogleDrive(buffer, filename, folderId);
-
-    return NextResponse.json({ message: "Fichier(s) importé(s) avec succès" }, { status: 201 });
+    return NextResponse.json(
+      { message: "Fichier(s) importé(s) avec succès" },
+      { status: 201 }
+    );
   } catch (err) {
     console.error(err);
     return NextResponse.json(
@@ -41,7 +45,6 @@ export async function POST(req: any, res: any) {
     );
   }
 }
-
 
 export async function GET(req: any, res: any) {
   try {
