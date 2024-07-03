@@ -57,8 +57,6 @@ function HomeComponent() {
     allFoldersIds();
   }, []);
 
-  console.log(folders);
-
   useEffect(() => {
     const id = searchParams.get('id');
     if (id) {
