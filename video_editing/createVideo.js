@@ -32,7 +32,7 @@ export async function createVideo() {
         await Editly({
             width: 1920,
             height: 1080,
-            outPath: 'output.mp4',
+            outPath: '/outputs/output.mp4',
             defaults: {
                 transition: {
                     duration: 0.2,
@@ -47,7 +47,9 @@ export async function createVideo() {
         });
 
         console.log('Video created successfully!');
+        return true;
     } catch (error) {
         console.error('Error creating video:', error);
+        return false;
     }
 }

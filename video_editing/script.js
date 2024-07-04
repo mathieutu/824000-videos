@@ -77,7 +77,7 @@ async function listFoldersInFolder(folderId) {
         const folders = res.data.files;
         console.log(`Found ${folders.length} folders in the folder.`);
         console.log(folders.map(folder => ({ id: folder.id, name: folder.name })));
-       return folders.map(folder => ({ id: folder.id, name: folder.name }));
+        return folders.map(folder => ({ id: folder.id, name: folder.name }));
     } catch (err) {
         console.error('Error listing or downloading files:', err);
         throw err;
@@ -103,7 +103,7 @@ async function listFilesInFolder(folderId) {
         const files = res.data.files;
         console.log(`Found ${files.length} files in the folder.`);
         console.log(files.map(file => ({ id: file.id, name: file.name })));
-       return files.map(file => ({ id: file.id, name: file.name }));
+        return files.map(file => ({ id: file.id, name: file.name }));
     } catch (err) {
         console.error('Error listing or downloading files:', err);
         throw err;
@@ -143,14 +143,14 @@ app.post('/download', async (req, res) => {
             fs.mkdirSync(downloadDir);
         }
 
-        const downloadedFiles = await Promise.all(fileIds.map(async fileId => {
+        await Promise.all(fileIds.map(async fileId => {
             const file = await drive.files.get({
                 fileId,
                 fields: 'id, name',
             }).then(res => res.data).catch(err => {
                 console.error(`Error fetching file ${fileId}. ${err.message}`);
             });
-            
+
             if (file) {
                 const fileExtension = path.extname(file.name);
                 const fileIdWithExtension = `${file.id}${fileExtension}`;
@@ -158,9 +158,25 @@ app.post('/download', async (req, res) => {
                 await downloadFile(file.id, filePath);
             }
         }));
-        createVideo();
 
-        res.json({ downloadedFiles });
+        const video = await createVideo();
+        if (video) {
+            const images = fs.readdirSync('./downloaded_files');
+
+            for (let index = 0; index < images.length; index++) {
+                const element = images[index];
+                fs.unlink(`./downloaded_files/${element}`, (err) => {
+                    if (err) throw err ;
+                    console.log(`File ${element} deleted !`) ;
+                 }) ;
+            }
+
+
+            console.log('OK');
+            res.json({ message: 'Video created successfully' });
+        } else {
+            res.status(500).json({ error: 'Error creating video' });
+        }
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: err.message });
