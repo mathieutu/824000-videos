@@ -1,5 +1,7 @@
 import { google } from "googleapis";
 import * as stream from "stream";
+import * as fs from "fs";
+import * as path from "path";
 
 // Initialize the Google Drive API client
 const googleCredentials = process.env.GOOGLE_CREDENTIALS;
@@ -14,17 +16,33 @@ const auth = new google.auth.GoogleAuth({
 
 const drive = google.drive({ version: "v3", auth });
 
+// Function to determine MIME type based on file extension
+function getMimeType(filename: string): string {
+  const extension = path.extname(filename).toLowerCase();
+  const mimeTypes: { [key: string]: string } = {
+    ".jpg": "image/jpeg",
+    ".jpeg": "image/jpeg",
+    ".png": "image/png",
+    ".gif": "image/gif",
+    ".mp4": "video/mp4",
+    ".mov": "video/quicktime",
+    // Add more MIME types as needed
+  };
+  return mimeTypes[extension] || "application/octet-stream";
+}
+
 export async function uploadToGoogleDrive(
-  buffer: any,
+  buffer: Buffer,
   filename: string,
   folderId: string
 ) {
+  const mimeType = getMimeType(filename);
   const bufferStream = new stream.PassThrough();
   bufferStream.end(buffer);
 
-  const { data } = await drive.files.create({
+  const data = await drive.files.create({
     media: {
-      mimeType: "application/octet-stream", // Change this according to the file type
+      mimeType,
       body: bufferStream,
     },
     requestBody: {
