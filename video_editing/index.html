@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>Montage vidéo</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            position: relative;
+        }
+
+        #container {
+            width: 90%;
+            margin: auto;
+            z-index: 1;
+            margin-bottom: 20px;
+        }
+
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.3);
+            display: none;
+            z-index: 900;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        #btn-select {
+            display: none;
+        }
+
+        #btn-montage {
+            display: none;
+            margin-left: auto;
+        }
+
+        .btn-container {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        button {
+            background-color: #555555;
+            color: white;
+            padding: 10px 20px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: white;
+            color: #555555;
+            border: 2px solid #555555;
+        }
+
+        #folders {
+            list-style: none;
+            padding: 0;
+            display: flex;
+            flex-wrap: nowrap;
+            cursor: pointer;
+        }
+
+        #folders li {
+            padding: 0 20px;
+        }
+
+        #photos {
+            display: flex;
+            flex-wrap: wrap;
+            list-style: none;
+            padding: 0;
+            justify-content: space-between;
+        }
+
+        .folder {
+            width: 50px;
+            height: 35px;
+            display: inline-block;
+            margin: 10 0;
+            position: relative;
+            background-color: #708090;
+            border-radius: 0 3px 3px 3px;
+            margin-bottom: -8px;
+        }
+
+        .folder:before {
+            content: '';
+            width: 60%;
+            height: 0.3em;
+            border-radius: 0 20px 0 0;
+            background-color: #708090;
+            position: absolute;
+            top: -0.3em;
+            left: 0px;
+        }
+
+        #photos li {
+            margin: 10px;
+            flex: 0 0 200px;
+            box-sizing: border-box;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            width: 200px;
+            height: 200px;
+            position: relative;
+        }
+
+        #photos img,
+        #photos video {
+            display: block;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            cursor: pointer;
+
+
+        }
+
+        #photos input[type="checkbox"] {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            transform: scale(1.5);
+        }
+
+        .loader {
+            width: 48px;
+            height: 48px;
+            border: 5px solid #000000;
+            border-bottom-color: transparent;
+            border-radius: 50%;
+            display: inline-block;
+            box-sizing: border-box;
+            animation: rotation 1s linear infinite;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            display: none;
+            z-index: 1000;
+        }
+
+        @keyframes rotation {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1001;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.8);
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        .modal-content {
+            max-width: 80%;
+            max-height: 80%;
+            object-fit: contain;
+            border: 2px solid #ccc;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+            display: block;
+            position: relative;
+            margin: auto;
+
+        }
+
+        .modal-content video {
+            cursor: pointer;
+        }
+
+        #caption {
+            margin: 20px auto;
+            display: block;
+            width: 80%;
+            text-align: center;
+            color: #ccc;
+            padding: 10px 0;
+        }
+
+        @keyframes zoom {
+            from {
+                transform: scale(0)
+            }
+
+            to {
+                transform: scale(1)
+            }
+        }
+
+        .close {
+            position: absolute;
+            top: 15px;
+            right: 35px;
+            color: #aaa;
+            font-size: 40px;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="container">
+        <div class="overlay"></div>
+        <h1>Montage vidéo</h1>
+        <div class="btn-container">
+            <button id="btn-load-folders" onclick="fetchFolders()">Choisir le dossier</button>
+        </div>
+        <ul id="folders"></ul>
+        <div id="btn-header">
+            <div id="btn-select">
+                <button onclick="selectAll()">Tout sélectionner</button>
+                <button onclick="deselectAll()">Tout désélectionner</button>
+            </div>
+            <button id="btn-montage" onclick="downloadFiles()">Créer le montage vidéo</button>
+            <a href="./output.mp4" download="./output.mp4">
+                <button id="btn-montage">Télécharger la vidéo</button>
+            </a>
+        </div>
+        <span class="loader"></span>
+        <ul id="photos"></ul>
+    </div>
+
+    <div id="myModal" class="modal">
+        <span class="close">&times;</span>
+        <div class="modal-content">
+            <img id="img01" style="display:none;">
+            <video id="vid01" style="display:none;" controls>
+                <source id="videoSource" type="video/mp4">
+            </video>
+        </div>
+        <div id="caption"></div>
+
+    </div>
+
+
+    <script>
+
+
+        async function fetchFolders() {
+            const loader = document.querySelector('.loader');
+            const overlay = document.querySelector('.overlay');
+            const foldersList = document.getElementById('folders');
+            const btnLoadFolders = document.getElementById('btn-load-folders');
+            foldersList.innerHTML = '';
+            overlay.style.display = 'block';
+            loader.style.display = 'block';
+
+            try {
+                const response = await fetch('http://localhost:3000/folders');
+                const folders = await response.json();
+
+                folders.forEach(folder => {
+                    const listItem = document.createElement('li');
+                    const folderIcon = document.createElement('div');
+                    folderIcon.classList.add('folder');
+                    const span = document.createElement('span');
+                    span.textContent = folder.name;
+                    span.style.display = 'block';
+                    span.style.textAlign = 'center';
+                    listItem.appendChild(folderIcon);
+                    listItem.appendChild(span);
+                    listItem.dataset.folderId = folder.id;
+                    listItem.onclick = () => fetchFiles(folder.id);
+                    foldersList.appendChild(listItem);
+                });
+            } catch (error) {
+                console.error(error);
+            } finally {
+                overlay.style.display = 'none';
+                loader.style.display = 'none';
+                btnLoadFolders.style.display = 'none';
+            }
+        }
+
+        async function fetchFiles(folderId) {
+            const loader = document.querySelector('.loader');
+            const overlay = document.querySelector('.overlay');
+            const fileList = document.getElementById('photos');
+            const btnSelect = document.getElementById('btn-select');
+            const foldersList = document.getElementById('folders');
+
+            foldersList.innerHTML = '';
+            fileList.innerHTML = '';
+            overlay.style.display = 'block';
+            loader.style.display = 'block';
+
+
+            try {
+                const response = await fetch(`http://localhost:3000/files?folderId=${folderId}`);
+                const files = await response.json();
+
+                btnSelect.style.display = 'block';
+
+                files.forEach(file => {
+                    const listItem = document.createElement('li');
+                    const checkbox = document.createElement('input');
+                    checkbox.type = 'checkbox';
+                    checkbox.value = file.id;
+                    checkbox.addEventListener('click', (event) => {
+                        event.stopPropagation();
+                    });
+
+                    const extension = file.name.split('.').pop();
+                    let type = '';
+                    if (extension === 'mp4' || extension === 'webm' || extension === 'ogg' || extension === 'mov') {
+                        type = 'video';
+                    } else if (extension === 'jpg' || extension === 'jpeg' || extension === 'png') {
+                        type = 'image';
+                    }
+                    listItem.onclick = () => showModal(file, type);
+                    if (extension === 'mp4' || extension === 'webm' || extension === 'ogg' || extension === 'mov') {
+                        const video = document.createElement('video');
+                        const source = document.createElement('source');
+                        source.src = `https://drive.google.com/file/d/${file.id}/preview`;
+                        video.appendChild(source);
+                        video.controls = true;
+                        listItem.appendChild(video);
+                    } else if (extension === 'jpg' || extension === 'jpeg' || extension === 'png') {
+                        const img = document.createElement('img');
+                        img.src = `https://lh3.google.com/u/0/d/${file.id}`;
+                        img.alt = file.name;
+                        listItem.appendChild(img);
+                    }
+
+                    listItem.appendChild(checkbox);
+
+                    fileList.appendChild(listItem);
+                });
+
+            } catch (error) {
+                console.error(error);
+            } finally {
+                overlay.style.display = 'none';
+                loader.style.display = 'none';
+            }
+        }
+
+        async function downloadFiles() {
+            const loader = document.querySelector('.loader');
+            const overlay = document.querySelector('.overlay');
+            const checkboxes = document.querySelectorAll('#photos input[type="checkbox"]:checked');
+            const btnSelect = document.getElementById('btn-select');
+            const btnLoadFolders = document.getElementById('btn-load-folders');
+            const fileIds = Array.from(checkboxes).map(checkbox => checkbox.value);
+
+            overlay.style.display = 'block';
+            loader.style.display = 'block';
+
+            const response = await fetch('http://localhost:3000/download', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ fileIds }),
+            });
+
+            if (response.ok) {
+                const fileList = document.getElementById('photos');
+                fileList.innerHTML = '';
+                const btnMontage = document.getElementById('btn-montage');
+                btnMontage.style.display = 'none';
+                loader.style.display = 'none';
+                overlay.style.display = 'none';
+                btnSelect.style.display = 'none';
+                btnLoadFolders.style.display = 'block';
+
+                alert('Montage vidéo créé avec succès');
+            }
+        }
+        function selectAll() {
+            const checkboxes = document.querySelectorAll('#photos input[type="checkbox"]');
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = true;
+            });
+
+            updateMontageButtonVisibility();
+        }
+        function deselectAll() {
+            const checkboxes = document.querySelectorAll('#photos input[type="checkbox"]');
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = false;
+            });
+
+            updateMontageButtonVisibility();
+        }
+
+        function showModal(file, type) {
+            const modal = document.querySelector('.modal');
+            const modalImg = document.getElementById('img01');
+            const modalVideo = document.getElementById('vid01');
+            const videoSource = document.getElementById('videoSource');
+            const captionText = document.getElementById('caption');
+
+            if (type === 'image') {
+                modalImg.src = `https://lh3.google.com/u/0/d/${file.id}`;
+                modalImg.style.display = 'block';
+                modalVideo.style.display = 'none';
+            } else if (type === 'video') {
+                videoSource.src = `https://drive.google.com/file/d/${file.id}/preview`;
+                modalVideo.style.display = 'block';
+                modalVideo.load();
+                modalImg.style.display = 'none';
+
+                modalVideo.onclick = function () {
+                    window.open(`https://drive.google.com/file/d/${file.id}/preview`, '_blank');
+                };
+            }
+
+            captionText.innerHTML = file.name;
+            modal.style.display = 'flex';
+
+            const closeModal = document.querySelector('.close');
+            closeModal.onclick = function () {
+                const modal = document.getElementById('myModal');
+                modal.style.display = 'none';
+                modalVideo.pause();
+            };
+
+            window.onclick = function (event) {
+                const modal = document.getElementById('myModal');
+                if (event.target == modal) {
+                    modal.style.display = 'none';
+                    modalVideo.pause();
+                }
+            };
+        }
+
+        function updateMontageButtonVisibility() {
+            const checkboxes = document.querySelectorAll('#photos input[type="checkbox"]:checked');
+            const btnMontage = document.getElementById('btn-montage');
+            const btnHeader = document.getElementById('btn-header');
+            btnHeader.style.display = 'flex';
+            btnHeader.style.justifyContent = 'space-between';
+            if (checkboxes.length > 0) {
+                btnMontage.style.display = 'block';
+            } else {
+                btnMontage.style.display = 'none';
+                btnHeader.style.display = 'block';
+            }
+        }
+
+        document.addEventListener('change', updateMontageButtonVisibility);
+
+
+    </script>
+
+</body>
+
+</html>
