@@ -15,7 +15,7 @@ const port = 3000;
 app.use(cors());
 app.use(bodyParser.json());
 
-const credentialsPath = path.join('./credentials.json');
+const credentialsPath = process.env.CREDENTIALS
 
 // Configure Google OAuth2 authentication
 const auth = new google.auth.GoogleAuth({
