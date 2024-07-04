@@ -1,0 +1,12 @@
+services:
+  editly:
+    container_name: editly
+    build: .
+    volumes:      
+      - "outputs:/outputs"
+    ports:
+      - "3000:3000"
+    command: npm run start
+
+volumes:
+  outputs:
