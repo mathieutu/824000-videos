@@ -1,0 +1,7 @@
+/node_modules/
+/dist/
+/.idea/
+/tmp/
+/logs/
+/outputs/
+google_credentials.json
